@@ -4,6 +4,84 @@
 <br />
 <h1 align="center"><img src="assets/openfl.png" alt="OpenFL"/></h1>
 
+## Codename Metal fork (instanced bitmap batching)
+
+**This is the OpenFL fork used by [Codename-Metal](https://github.com/TheComingUnitys/Codename-Metal)**
+(based on OpenFL 9.5.x).  It adds an instanced bitmap path for the Metal backend:
+consecutive `Bitmap` draws that share a `BitmapData` and blend state are batched into one
+`drawElementsInstanced` call, with the object matrix / alpha / colour transform supplied as
+per-instance attributes.
+
+### Use it with Codename-Metal
+
+```sh
+git clone https://github.com/TheComingUnitys/openfl-metal.git
+git clone https://github.com/TheComingUnitys/flixel-metal.git
+
+cd /path/to/Codename-Metal/CodenameEngine-1.0.1
+haxelib dev openfl  /path/to/openfl-metal
+haxelib dev flixel  /path/to/flixel-metal
+
+haxelib path openfl   # must print /path/to/openfl-metal/src/
+haxelib path flixel   # must print /path/to/flixel-metal/
+```
+
+Then build normally with the Metal backend (see Codename-Metal's README;
+`project.xml` already enables `metal_instancing` for the Metal target):
+
+```sh
+export MACOSX_DEPLOYMENT_TARGET=11.0
+./metal/scripts/apply.sh --lime <lime-832>
+```
+
+Disable the optimization at runtime from Flixel without rebuilding:
+
+```haxe
+FlxG.metalInstancing = false;
+```
+
+### Use it in another OpenFL project
+
+Requires the Metal backend (Codename-Metal's Lime dev checkout + native libraries) and
+`-Dmetal -Dmetal_instancing`.  Without `metal_instancing` this fork behaves like upstream
+OpenFL.
+
+Custom instanced rendering API:
+
+```haxe
+// vertex shader: declare per-instance attributes (each is one float4)
+// attribute vec4 i_data0; attribute vec4 i_data1; ... up to i_data15
+ctx.setInstanceBufferAt(location0, instanceBuffer, 0, Context3DVertexBufferFormat.FLOAT_4);
+ctx.setInstanceBufferAt(location1, instanceBuffer, 4, Context3DVertexBufferFormat.FLOAT_4);
+ctx.drawTrianglesInstanced(indexBuffer, firstIndex, numTriangles, instanceCount);
+ctx.clearInstanceBufferAt(location0);
+ctx.clearInstanceBufferAt(location1);
+```
+
+Native backend contract: `i_data0..i_data15` are gathered into one bgfx instance data
+buffer (16-byte float4 slots, step rate 1) and the shader reads them as Metal instance
+inputs.  Only `vec4` instance attributes are supported.
+
+### Limitations
+
+- Custom `Bitmap` shaders (`DisplayObject.shader`), filters, masks and render-target
+  switches flush the batch and fall back to normal drawing.
+- The batch preserves draw order; it is not designed for overlapping transparent objects
+  that require a different order.
+- Diagnostics that count individual draws (`cne_capture`, `CNE_METAL_SHOW_WORLDCORNER`)
+  see batches, not the original per-bitmap calls.
+
+### Reverting to upstream OpenFL
+
+```sh
+haxelib dev openfl      # remove the development directory link
+haxelib set openfl git  # restore the copy vendored by Codename-Metal
+```
+
+See `METAL-INSTANCING.md` for the implementation overview.
+
+---
+
 
 Introduction
 ============
