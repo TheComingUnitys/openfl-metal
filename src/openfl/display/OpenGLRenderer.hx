@@ -402,6 +402,9 @@ class OpenGLRenderer extends DisplayObjectRenderer
 	**/
 	public function setViewport():Void
 	{
+		#if metal_instancing
+		MetalInstanceBatch.flush();
+		#end
 		#if metal
 		if (MetalNative.active("state")) MetalNative.setViewport(__offsetX, __offsetY, __displayWidth, __displayHeight); // [cne-native] renderer viewport
 		else

@@ -1866,6 +1866,9 @@ import lime.math.Vector2;
 	**/
 	public function setScissorRectangle(rectangle:Rectangle):Void
 	{
+		#if metal_instancing
+		MetalInstanceBatch.flush();
+		#end
 		if (rectangle != null)
 		{
 			__state.scissorEnabled = true;

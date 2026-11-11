@@ -39,7 +39,7 @@ class MetalInstanceBatch
 	static inline var MAX_INSTANCES = 512;
 
 	/** Set to false to fall back to per-bitmap draws (FlxG.metalInstancing on the Flixel side). */
-	public static var enabled = true;
+	public static var enabled = #if sys (Sys.getEnv("CNE_METAL_INSTANCING") == "0" ? false : true) #else true #end;
 
 	static var active = false;
 	static var flushing = false;
