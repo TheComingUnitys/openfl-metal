@@ -12,6 +12,11 @@ consecutive `Bitmap` draws that share a `BitmapData` and blend state are batched
 `drawElementsInstanced` call, with the object matrix / alpha / colour transform supplied as
 per-instance attributes.
 
+> **Instancing is opt-in for now.**  The batch skips the late matrix flip used when drawing
+> into offscreen render targets, which rotated/fragmented filtered stages, so it is disabled
+> by default until that is fixed.  Enable with `CNE_METAL_INSTANCING=1` or
+> `FlxG.metalInstancing = true`.
+
 ### Use it with Codename-Metal
 
 ```sh
@@ -34,10 +39,10 @@ export MACOSX_DEPLOYMENT_TARGET=11.0
 ./metal/scripts/apply.sh --lime <lime-832>
 ```
 
-Disable the optimization at runtime from Flixel without rebuilding:
+Enable the optimization at runtime from Flixel without rebuilding (it is off by default):
 
 ```haxe
-FlxG.metalInstancing = false;
+FlxG.metalInstancing = true;
 ```
 
 ### Use it in another OpenFL project

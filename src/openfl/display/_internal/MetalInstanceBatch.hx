@@ -38,8 +38,13 @@ class MetalInstanceBatch
 	static inline var FLOATS_PER_INSTANCE = 28; // 7 float4
 	static inline var MAX_INSTANCES = 512;
 
-	/** Set to false to fall back to per-bitmap draws (FlxG.metalInstancing on the Flixel side). */
-	public static var enabled = #if sys (Sys.getEnv("CNE_METAL_INSTANCING") == "0" ? false : true) #else true #end;
+	/**
+	 * Instanced bitmap batching is opt-in while its render-target/flip handling is still
+	 * being validated: it skipped the late matrix flip used for offscreen passes, which
+	 * rotated/fragmented filtered stages (Winter Horrorland / Senpai / Roses / Thorns).
+	 * Enable with CNE_METAL_INSTANCING=1 or FlxG.metalInstancing = true.
+	 */
+	public static var enabled = #if sys (Sys.getEnv("CNE_METAL_INSTANCING") == "1" ? true : false) #else false #end;
 
 	static var active = false;
 	static var flushing = false;
